@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toothbrush Timer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .timer {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress {
+      height: 100%;
+      background: #4caf50;
+      width: 0;
+      transition: width 1s linear;
+    }
+
+    .teeth-container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    .tooth {
+      width: 40px;
+      height: 50px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      position: relative;
+    }
+
+    .highlight {
+      background: pink;
+      opacity: 0.6;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+
+    .reward {
+      font-size: 3rem;
+      margin-top: 20px;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .buttons {
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .start {
+      background: #4caf50;
+    }
+
+    .pause {
+      background: #ff9800;
+    }
+
+    .reset {
+      background: #2196f3;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="timer" id="timer">2:00</div>
+
+    <div class="progress-bar">
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="teeth-container" id="teeth-container"></div>
+
+    <div class="buttons">
+      <button class="start" id="start-btn">Start</button>
+      <button class="pause" id="pause-btn">Pause</button>
+      <button class="reset" id="reset-btn">Reset</button>
+    </div>
+
+    <div id="reward" class="reward" style="display: none;">🎁</div>
+  </div>
+
+  <script>
+    const BRUSH_TIME = 120; // Total brushing time in seconds
+    const TEETH_COUNT = 20; // Total teeth
+    const SECONDS_PER_TOOTH = BRUSH_TIME / TEETH_COUNT; // Seconds per tooth
+    const GIFTS = ['🎁', '🎨', '🎮', '🎪', '🎭', '🎠', '🎪', '🦄', '🌈', '🎨'];
+
+    let timeLeft = BRUSH_TIME;
+    let isRunning = false;
+    let currentTooth = 0;
+    let interval = null;
+
+    const timerEl = document.getElementById('timer');
+    const progressEl = document.getElementById('progress');
+    const teethContainerEl = document.getElementById('teeth-container');
+    const rewardEl = document.getElementById('reward');
+
+    // Create teeth elements
+    for (let i = 0; i < TEETH_COUNT; i++) {
+      const tooth = document.createElement('div');
+      tooth.classList.add('tooth');
+      teethContainerEl.appendChild(tooth);
+    }
+
+    const teethEls = document.querySelectorAll('.tooth');
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateProgress() {
+      const progressPercentage = ((BRUSH_TIME - timeLeft) / BRUSH_TIME) * 100;
+      progressEl.style.width = `${progressPercentage}%`;
+    }
+
+    function highlightTooth() {
+      teethEls.forEach((tooth, index) => {
+        tooth.classList.toggle('highlight', index === currentTooth);
+      });
+    }
+
+    function showReward() {
+      const randomGift = GIFTS[Math.floor(Math.random() * GIFTS.length)];
+      rewardEl.textContent = randomGift;
+      rewardEl.style.display = 'block';
+    }
+
+    function startTimer() {
+      if (isRunning) return;
+
+      isRunning = true;
+      interval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          currentTooth = Math.floor((BRUSH_TIME - timeLeft) / SECONDS_PER_TOOTH);
+          updateTimerDisplay();
+          updateProgress();
+          highlightTooth();
+        } else {
+          clearInterval(interval);
+          isRunning = false;
+          showReward();
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      isRunning = false;
+      clearInterval(interval);
+    }
+
+    function resetTimer() {
+      isRunning = false;
+      clearInterval(interval);
+      timeLeft = BRUSH_TIME;
+      currentTooth = 0;
+      updateTimerDisplay();
+      updateProgress();
+      highlightTooth();
+      rewardEl.style.display = 'none';
+    }
+
+    document.getElementById('start-btn').addEventListener('click', startTimer);
+    document.getElementById('pause-btn').addEventListener('click', pauseTimer);
+    document.getElementById('reset-btn').addEventListener('click', resetTimer);
+
+    // Initialize display
+    updateTimerDisplay();
+    updateProgress();
+  </script>
+</body>
+</html>
